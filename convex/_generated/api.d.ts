@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as boards from "../boards.js";
+import type * as columns from "../columns.js";
 import type * as users from "../users.js";
 import type * as workspaces from "../workspaces.js";
 
@@ -18,6 +20,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  boards: typeof boards;
+  columns: typeof columns;
   users: typeof users;
   workspaces: typeof workspaces;
 }>;
