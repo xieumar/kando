@@ -1,26 +1,103 @@
 @import "tailwindcss";
 
+@theme {
+  --color-neo-bg: #fffdf6;
+  --color-neo-pink: #ff90e8;
+  --color-neo-purple: #7c3aed;
+  --color-neo-yellow: #ffc700;
+  --color-neo-mint: #00e599;
+  --color-neo-blue: #5465ff;
+  --color-neo-coral: #ff6b6b;
+  --color-neo-cyan: #a5f3fc;
+  --color-neo-black: #000000;
+  --color-neo-dark: #121212;
+
+  --shadow-neo-sm: 2px 2px 0px 0px #000000;
+  --shadow-neo: 4px 4px 0px 0px #000000;
+  --shadow-neo-lg: 6px 6px 0px 0px #000000;
+  --shadow-neo-xl: 8px 8px 0px 0px #000000;
+  --shadow-neo-white: 4px 4px 0px 0px #ffffff;
+}
+
+@utility border-3 {
+  border-width: 3px;
+}
+
+@utility border-4 {
+  border-width: 4px;
+}
+
+@utility border-5 {
+  border-width: 5px;
+}
+
+@utility shadow-neo-sm {
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+
+@utility shadow-neo {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+@utility shadow-neo-lg {
+  box-shadow: 6px 6px 0px 0px #000000;
+}
+
+@utility shadow-neo-xl {
+  box-shadow: 8px 8px 0px 0px #000000;
+}
+
+@utility shadow-neo-white {
+  box-shadow: 4px 4px 0px 0px #ffffff;
+}
+
+@utility shadow-neo-pink {
+  box-shadow: 4px 4px 0px 0px #ff90e8;
+}
+
+@utility shadow-neo-purple {
+  box-shadow: 4px 4px 0px 0px #7c3aed;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #fffdf6;
+  --foreground: #000000;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Neobrutalist Aesthetic */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fffdf6;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff90e8;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffc700;
 }
