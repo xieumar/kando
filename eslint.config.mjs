@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
       "**/node_modules/**",
       "**/.git/**",
       "**/coverage/**",
+      "**/convex/_generated/**",
     ],
   },
   // Next.js recommended configs
