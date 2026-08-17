@@ -74,43 +74,40 @@ export function Sidebar() {
         collapsed ? "w-20" : "w-64"
       )}
     >
-      {/* Top Nav Header & Workspace Switcher */}
-      <div className="border-b-3 border-black bg-[#fffdf6] p-3">
-        <div className="flex items-center justify-between gap-2">
+      {/* Top Nav Header & Workspace Switcher (h-16 matching Topbar height) */}
+      <div className="flex h-16 items-center border-b-3 border-black bg-[#fffdf6] px-3">
+        <div className="flex w-full items-center justify-between gap-2">
           <div
             onClick={() => collapsed && setCollapsed(false)}
             className={cn(
-              "flex flex-1 items-center gap-3 border-2 border-black bg-[#fffdf6] p-2 shadow-neo-sm transition-all",
+              "flex flex-1 items-center gap-2.5 border-2 border-black bg-[#fffdf6] px-2 py-1 shadow-neo-sm transition-all",
               collapsed
-                ? "justify-center p-2 cursor-pointer hover:bg-white active:translate-x-[1px] active:translate-y-[1px]"
+                ? "justify-center p-1.5 cursor-pointer hover:bg-white active:translate-x-[1px] active:translate-y-[1px]"
                 : "cursor-pointer hover:bg-white"
             )}
             title={
               collapsed ? "Click K to expand sidebar" : "Workspace options"
             }
           >
-            <div className="flex size-8 shrink-0 items-center justify-center border-2 border-black bg-[#ff90e8] font-black text-sm text-black shadow-neo-sm">
+            <div className="flex size-7 shrink-0 items-center justify-center border-2 border-black bg-[#ff90e8] font-black text-xs text-black shadow-neo-sm">
               K
             </div>
             {!collapsed && (
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="font-extrabold text-xs uppercase tracking-wider truncate text-black">
+                <span className="font-extrabold text-[11px] uppercase tracking-wider truncate leading-tight text-black">
                   Kando Studio
-                </span>
-                <span className="text-[10px] font-bold text-neutral-600 truncate">
-                  Pro Workspace
                 </span>
               </div>
             )}
             {!collapsed && (
-              <ChevronsUpDown className="size-4 shrink-0 text-neutral-600 stroke-[2.5]" />
+              <ChevronsUpDown className="size-3.5 shrink-0 text-neutral-600 stroke-[2.5]" />
             )}
           </div>
 
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="flex size-8 shrink-0 items-center justify-center border-2 border-black bg-[#fffdf6] shadow-neo-sm hover:bg-white active:translate-x-[1px] active:translate-y-[1px]"
+              className="flex size-7 shrink-0 items-center justify-center border-2 border-black bg-[#fffdf6] shadow-neo-sm hover:bg-white active:translate-x-[1px] active:translate-y-[1px]"
               title="Collapse sidebar"
             >
               <ChevronLeft className="size-4 stroke-[3]" />
