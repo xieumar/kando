@@ -13,9 +13,13 @@ import { Badge } from "@/components/ui/badge";
 export function KanbanCard({
   task,
   onClick,
+  onDragStart,
+  onDragEnd,
 }: {
   task: KanbanTask;
   onClick?: (task: KanbanTask) => void;
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
 }) {
   const [now] = useState(() => Date.now());
 
@@ -31,8 +35,11 @@ export function KanbanCard({
 
   return (
     <div
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       onClick={() => onClick?.(task)}
-      className="group relative flex flex-col border-2 border-black bg-white p-3.5 shadow-neo-sm hover:shadow-neo transition-all cursor-grab active:cursor-grabbing select-none"
+      className="group relative flex w-full box-border shrink-0 flex-col border-2 border-black bg-white p-3.5 shadow-neo-sm hover:shadow-neo transition-all cursor-grab active:cursor-grabbing select-none"
       style={{
         borderLeftWidth: task.coverColor ? "6px" : "2px",
         borderLeftColor: task.coverColor || "#000000",

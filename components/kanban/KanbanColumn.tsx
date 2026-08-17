@@ -14,15 +14,23 @@ import { Badge } from "@/components/ui/badge";
 export function KanbanColumn({
   column,
   children,
+  isDraggedOver,
   onAddTask,
   onEditColumn,
   onDeleteColumn,
+  onDragOver,
+  onDragLeave,
+  onDrop,
 }: {
   column: KanbanColumnData;
   children?: React.ReactNode;
+  isDraggedOver?: boolean;
   onAddTask?: (columnId: string) => void;
   onEditColumn?: (column: KanbanColumnData) => void;
   onDeleteColumn?: (columnId: string) => void;
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const taskCount = column.tasks?.length || 0;
@@ -30,9 +38,13 @@ export function KanbanColumn({
 
   return (
     <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
       className={cn(
-        "w-80 shrink-0 border-3 border-black bg-[#fffdf6] p-4 shadow-neo flex flex-col max-h-[calc(100vh-240px)] transition-all select-none",
-        isWipExceeded && "ring-3 ring-[#ff6b6b] shadow-neo-lg"
+        "w-80 shrink-0 border-3 border-black bg-[#fffdf6] p-3.5 shadow-neo flex flex-col max-h-[calc(100vh-240px)] transition-all select-none",
+        isWipExceeded && "ring-3 ring-[#ff6b6b] shadow-neo-lg",
+        isDraggedOver && "bg-[#00e599]/15 border-dashed ring-3 ring-black"
       )}
     >
       {/* Column Header Bar */}
@@ -131,7 +143,9 @@ export function KanbanColumn({
       </div>
 
       {/* Task Cards Stack Container */}
-      <div className="flex-1 space-y-3 overflow-y-auto pr-1">{children}</div>
+      <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden p-0.5 w-full">
+        {children}
+      </div>
     </div>
   );
 }

@@ -5,15 +5,81 @@ import { Plus, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "@/components/kanban/KanbanColumn";
 import { KanbanCard } from "@/components/kanban/KanbanCard";
+import { useKanbanDragAndDrop } from "@/hooks/useKanbanDragAndDrop";
 import { mockBoard } from "@/lib/mock-data";
 
 export function KanbanBoard({
   initialBoard = mockBoard,
   onAddTask,
   onAddColumn,
-}: KanbanBoardProps) {
+  onTaskMove,
+}: KanbanBoardProps & {
+  onTaskMove?: (
+    taskId: string,
+    targetColumnId: string,
+    newOrder: number
+  ) => void;
+}) {
+  const [boardState, setBoardState] = useState<KanbanBoardData>(initialBoard);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPriority, setFilterPriority] = useState<string>("all");
+
+  const handleTaskMove = (
+    taskId: string,
+    targetColumnId: string,
+    newOrder: number
+  ) => {
+    // Optimistic local state update
+    setBoardState((prev) => {
+      if (!prev.columns) return prev;
+
+      let movedTask: KanbanTask | undefined;
+
+      // Remove task from source column
+      const updatedColumns = prev.columns.map((col) => {
+        const found = col.tasks?.find((t) => t._id === taskId);
+        if (found) {
+          movedTask = { ...found, columnId: targetColumnId, order: newOrder };
+          return {
+            ...col,
+            tasks: col.tasks?.filter((t) => t._id !== taskId),
+          };
+        }
+        return col;
+      });
+
+      // Insert task into target column
+      if (movedTask) {
+        return {
+          ...prev,
+          columns: updatedColumns.map((col) => {
+            if (col._id === targetColumnId) {
+              return {
+                ...col,
+                tasks: [...(col.tasks || []), movedTask!],
+              };
+            }
+            return col;
+          }),
+        };
+      }
+
+      return prev;
+    });
+
+    if (onTaskMove) {
+      onTaskMove(taskId, targetColumnId, newOrder);
+    }
+  };
+
+  const {
+    draggedOverColumnId,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+  } = useKanbanDragAndDrop({ onTaskMove: handleTaskMove });
 
   return (
     <div className="flex flex-col h-full space-y-4 select-none">
@@ -22,16 +88,16 @@ export function KanbanBoard({
         {/* Title & Icon */}
         <div className="flex items-center gap-3">
           <div className="flex size-11 items-center justify-center border-3 border-black bg-[#ff90e8] text-xl shadow-neo-sm">
-            {initialBoard.icon}
+            {boardState.icon}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-black text-xl uppercase tracking-wider text-black">
-                {initialBoard.name}
+                {boardState.name}
               </h1>
             </div>
             <p className="text-xs font-bold text-neutral-600">
-              {initialBoard.description}
+              {boardState.description}
             </p>
           </div>
         </div>
@@ -92,10 +158,23 @@ export function KanbanBoard({
 
       {/* Kanban Columns Horizontal Canvas */}
       <div className="flex flex-1 gap-6 overflow-x-auto pb-4 pt-1 items-start min-h-[calc(100vh-220px)]">
-        {initialBoard.columns?.map((column) => (
-          <KanbanColumn key={column._id} column={column} onAddTask={onAddTask}>
+        {boardState.columns?.map((column) => (
+          <KanbanColumn
+            key={column._id}
+            column={column}
+            isDraggedOver={draggedOverColumnId === column._id}
+            onAddTask={onAddTask}
+            onDragOver={(e) => handleDragOver(e, column._id)}
+            onDragLeave={(e) => handleDragLeave(e, column._id)}
+            onDrop={(e) => handleDrop(e, column._id)}
+          >
             {column.tasks?.map((task) => (
-              <KanbanCard key={task._id} task={task} />
+              <KanbanCard
+                key={task._id}
+                task={task}
+                onDragStart={(e) => handleDragStart(e, task._id)}
+                onDragEnd={handleDragEnd}
+              />
             ))}
           </KanbanColumn>
         ))}
