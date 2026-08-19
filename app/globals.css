@@ -80,24 +80,23 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom Scrollbar for Neobrutalist Aesthetic */
+/* Custom Sleek Ultra-Thin Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #fffdf6;
-  border: 2px solid #000000;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ff90e8;
-  border: 2px solid #000000;
+  background: #000000;
+  border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ffc700;
+  background: #ff90e8;
 }
 
 @theme inline {
