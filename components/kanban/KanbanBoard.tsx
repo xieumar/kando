@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import {
   Plus,
   Search,
@@ -34,12 +36,15 @@ export function KanbanBoard({
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPriority, setFilterPriority] = useState<string>("all");
 
-  const handleTaskMove = (
+  // Convex real-time optimistic task movement mutation
+  const moveTaskMutation = useMutation(api.tasks.moveTask);
+
+  const handleTaskMove = async (
     taskId: string,
     targetColumnId: string,
     newOrder: number
   ) => {
-    // Optimistic local state update
+    // 1. Optimistic Local Client State Update for instant UI reordering
     setBoardState((prev) => {
       if (!prev.columns) return prev;
 
@@ -77,8 +82,29 @@ export function KanbanBoard({
       return prev;
     });
 
+    // 2. Trigger parent callback if provided
     if (onTaskMove) {
       onTaskMove(taskId, targetColumnId, newOrder);
+    }
+
+    // 3. Persist mutation to Convex Realtime Database (if valid Convex ID)
+    try {
+      if (
+        taskId &&
+        !taskId.startsWith("task_") &&
+        !targetColumnId.startsWith("col_")
+      ) {
+        await moveTaskMutation({
+          taskId: taskId as any,
+          targetColumnId: targetColumnId as any,
+          newOrder,
+        });
+      }
+    } catch (error) {
+      console.warn(
+        "Convex sync in offline/mock mode for task movement:",
+        error
+      );
     }
   };
 
@@ -212,7 +238,7 @@ export function KanbanBoard({
         </div>
       </div>
 
-      {/* ClickUp-Style Full Height Horizontal Kanban Canvas with Bottom Shadow Clearance */}
+      {/* ClickUp-Style Full Height Horizontal Kanban Canvas */}
       <div className="flex flex-1 gap-5 overflow-x-auto overflow-y-hidden pb-4 pt-1 px-1 items-stretch min-h-0">
         {boardState.columns?.map((column) => (
           <KanbanColumn
