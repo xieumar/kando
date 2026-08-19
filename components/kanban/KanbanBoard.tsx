@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import {
   Plus,
   Search,
@@ -14,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "@/components/kanban/KanbanColumn";
 import { KanbanCard } from "@/components/kanban/KanbanCard";
+import { CreateColumnModal } from "@/components/kanban/CreateColumnModal";
+import { EditColumnModal } from "@/components/kanban/EditColumnModal";
 import { useKanbanDragAndDrop } from "@/hooks/useKanbanDragAndDrop";
 import { mockBoard } from "@/lib/mock-data";
 
@@ -35,9 +38,16 @@ export function KanbanBoard({
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [isCreateColumnOpen, setIsCreateColumnOpen] = useState(false);
+  const [editingColumn, setEditingColumn] = useState<KanbanColumnData | null>(
+    null
+  );
 
-  // Convex real-time optimistic task movement mutation
+  // Convex mutations
   const moveTaskMutation = useMutation(api.tasks.moveTask);
+  const createColumnMutation = useMutation(api.columns.createColumn);
+  const updateColumnMutation = useMutation(api.columns.updateColumn);
+  const deleteColumnMutation = useMutation(api.columns.deleteColumn);
 
   const handleTaskMove = async (
     taskId: string,
@@ -82,12 +92,11 @@ export function KanbanBoard({
       return prev;
     });
 
-    // 2. Trigger parent callback if provided
     if (onTaskMove) {
       onTaskMove(taskId, targetColumnId, newOrder);
     }
 
-    // 3. Persist mutation to Convex Realtime Database (if valid Convex ID)
+    // 2. Persist mutation to Convex Realtime Database
     try {
       if (
         taskId &&
@@ -95,16 +104,107 @@ export function KanbanBoard({
         !targetColumnId.startsWith("col_")
       ) {
         await moveTaskMutation({
-          taskId: taskId as any,
-          targetColumnId: targetColumnId as any,
+          taskId: taskId as unknown as Id<"tasks">,
+          targetColumnId: targetColumnId as unknown as Id<"columns">,
           newOrder,
         });
       }
     } catch (error) {
-      console.warn(
-        "Convex sync in offline/mock mode for task movement:",
-        error
-      );
+      console.warn("Convex sync in mock mode for task movement:", error);
+    }
+  };
+
+  const handleCreateColumn = async (
+    name: string,
+    color: string,
+    wipLimit?: number
+  ) => {
+    const newColId = `col_${Date.now()}`;
+    const newColumn: KanbanColumnData = {
+      _id: newColId,
+      boardId: boardState._id,
+      name,
+      color,
+      wipLimit,
+      order: (boardState.columns?.length || 0) + 1,
+      tasks: [],
+      createdAt: Date.now(),
+    };
+
+    // Optimistic local state update
+    setBoardState((prev) => ({
+      ...prev,
+      columns: [...(prev.columns || []), newColumn],
+    }));
+
+    // Convex backend sync
+    try {
+      if (boardState._id && !boardState._id.startsWith("board_")) {
+        await createColumnMutation({
+          boardId: boardState._id as unknown as Id<"boards">,
+          name,
+          color,
+          wipLimit,
+        });
+      }
+    } catch (error) {
+      console.warn("Convex sync in mock mode for column creation:", error);
+    }
+  };
+
+  const handleUpdateColumn = async (
+    columnId: string,
+    name: string,
+    color: string,
+    wipLimit?: number
+  ) => {
+    // Optimistic local state update
+    setBoardState((prev) => ({
+      ...prev,
+      columns: prev.columns?.map((col) => {
+        if (col._id === columnId) {
+          return {
+            ...col,
+            name,
+            color,
+            wipLimit,
+          };
+        }
+        return col;
+      }),
+    }));
+
+    // Convex backend sync
+    try {
+      if (columnId && !columnId.startsWith("col_")) {
+        await updateColumnMutation({
+          columnId: columnId as unknown as Id<"columns">,
+          name,
+          color,
+          wipLimit,
+        });
+      }
+    } catch (error) {
+      console.warn("Convex sync in mock mode for column update:", error);
+    }
+  };
+
+  const handleDeleteColumn = async (columnId: string) => {
+    // Optimistic local state update
+    setBoardState((prev) => ({
+      ...prev,
+      columns: prev.columns?.filter((col) => col._id !== columnId),
+    }));
+
+    // Convex backend sync
+    try {
+      if (columnId && !columnId.startsWith("col_")) {
+        await deleteColumnMutation({
+          columnId: columnId as unknown as Id<"columns">,
+        });
+      }
+    } catch (error) {
+      console.warn("Convex sync in mock mode for column deletion:", error);
     }
   };
 
@@ -178,7 +278,10 @@ export function KanbanBoard({
             <Button
               size="sm"
               variant="outline"
-              onClick={onAddColumn}
+              onClick={() => {
+                setIsCreateColumnOpen(true);
+                if (onAddColumn) onAddColumn();
+              }}
               className="h-8 px-2.5 text-xs gap-1 border-2"
             >
               <Plus className="size-3.5 stroke-[3]" />
@@ -196,7 +299,7 @@ export function KanbanBoard({
           </div>
         </div>
 
-        {/* Row 2: Slim Filter Bar (ClickUp Style) */}
+        {/* Row 2: Slim Filter Bar */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {/* Search Input */}
@@ -246,6 +349,8 @@ export function KanbanBoard({
             column={column}
             isDraggedOver={draggedOverColumnId === column._id}
             onAddTask={onAddTask}
+            onEditColumn={(col) => setEditingColumn(col)}
+            onDeleteColumn={handleDeleteColumn}
             onDragOver={(e) => handleDragOver(e, column._id)}
             onDragLeave={(e) => handleDragLeave(e, column._id)}
             onDrop={(e) => handleDrop(e, column._id)}
@@ -262,6 +367,22 @@ export function KanbanBoard({
           </KanbanColumn>
         ))}
       </div>
+
+      {/* New Column Creation Modal */}
+      <CreateColumnModal
+        isOpen={isCreateColumnOpen}
+        onClose={() => setIsCreateColumnOpen(false)}
+        onCreateColumn={handleCreateColumn}
+      />
+
+      {/* Edit Column Modal */}
+      <EditColumnModal
+        key={editingColumn?._id || "none"}
+        isOpen={!!editingColumn}
+        column={editingColumn}
+        onClose={() => setEditingColumn(null)}
+        onUpdateColumn={handleUpdateColumn}
+      />
     </div>
   );
 }

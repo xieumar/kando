@@ -47,7 +47,7 @@ export function KanbanColumn({
         isDraggedOver && "bg-[#00e599]/15 border-dashed ring-3 ring-black"
       )}
     >
-      {/* Column Header Bar (Clean, no top color bar) */}
+      {/* Column Header Bar */}
       <div className="relative border-b-2 border-black pb-2 mb-2 shrink-0">
         <div className="flex items-center justify-between">
           {/* Color Indicator & Title & Count */}
@@ -75,10 +75,12 @@ export function KanbanColumn({
           <div className="flex items-center gap-1">
             {/* Quick Add Task Button */}
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 if (onAddTask) onAddTask(column._id);
               }}
-              className="flex size-6 items-center justify-center border-2 border-black bg-white shadow-neo-sm hover:bg-[#ff90e8] active:translate-x-[1px] active:translate-y-[1px] transition-colors"
+              className="flex size-6 items-center justify-center border-2 border-black bg-white shadow-neo-sm hover:bg-[#ff90e8] active:translate-x-[1px] active:translate-y-[1px] transition-colors cursor-pointer"
               title="Add task to column"
             >
               <Plus className="size-3.5 stroke-[3] text-black" />
@@ -87,8 +89,12 @@ export function KanbanColumn({
             {/* Column Options Menu Button */}
             <div className="relative">
               <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="flex size-6 items-center justify-center border-2 border-black bg-white shadow-neo-sm hover:bg-neutral-100 active:translate-x-[1px] active:translate-y-[1px]"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(!menuOpen);
+                }}
+                className="flex size-6 items-center justify-center border-2 border-black bg-white shadow-neo-sm hover:bg-neutral-100 active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
                 title="Column menu"
               >
                 <MoreHorizontal className="size-3.5 stroke-[2.5] text-black" />
@@ -98,23 +104,27 @@ export function KanbanColumn({
               {menuOpen && (
                 <div className="absolute right-0 top-8 z-30 w-40 border-3 border-black bg-white p-1.5 shadow-neo">
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setMenuOpen(false);
                       if (onEditColumn) onEditColumn(column);
                     }}
-                    className="flex w-full items-center gap-2 px-2 py-1 text-xs font-extrabold uppercase hover:bg-[#ff90e8] text-black"
+                    className="flex w-full items-center gap-2 px-2 py-1.5 text-xs font-extrabold uppercase hover:bg-[#ff90e8] text-black cursor-pointer"
                   >
-                    <Edit3 className="size-3 stroke-[2.5]" />
+                    <Edit3 className="size-3.5 stroke-[2.5]" />
                     <span>Edit Column</span>
                   </button>
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setMenuOpen(false);
                       if (onDeleteColumn) onDeleteColumn(column._id);
                     }}
-                    className="flex w-full items-center gap-2 px-2 py-1 text-xs font-extrabold uppercase hover:bg-[#ff6b6b] hover:text-white text-black"
+                    className="flex w-full items-center gap-2 px-2 py-1.5 text-xs font-extrabold uppercase hover:bg-[#ff6b6b] hover:text-white text-black cursor-pointer"
                   >
-                    <Trash2 className="size-3 stroke-[2.5]" />
+                    <Trash2 className="size-3.5 stroke-[2.5]" />
                     <span>Delete Column</span>
                   </button>
                 </div>
